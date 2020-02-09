@@ -17,10 +17,10 @@ int StopButonState = 0;
 const byte ROWS = 3; // rows
 const byte COLS = 3; // columns
 //define the symbols on the buttons
-char keys[ROWS][COLS] = {
-  {'1', '2', '3'},
-  {'4', '5', '6'},
-  {'7', '8', '9'}
+byte keys[ROWS][COLS] = {
+  {1, 2, 3},
+  {4, 5, 6},
+  {7, 8, 9}
 };
 byte rowPins[ROWS] = {4, 3, 2}; //connect to the row pinouts of the buttons
 byte colPins[COLS] = {8, 7, 6}; //connect to the column pinouts of the buttons
@@ -64,7 +64,7 @@ void loop()
   while (customKeypad.available()) {
     keypadEvent e = customKeypad.read();
     //Serial.print((char)e.bit.KEY);
-    Serial.print((int)(char)e.bit.KEY);
+    Serial.print((int)e.bit.KEY);
     if (e.bit.EVENT == KEY_JUST_PRESSED) {
       Serial.println(" pressed");
       myMP3TheaterSoundboard.play((int)e.bit.KEY);
