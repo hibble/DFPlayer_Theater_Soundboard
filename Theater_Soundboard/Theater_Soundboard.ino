@@ -22,8 +22,8 @@ byte keys[ROWS][COLS] = {
   {4, 5, 6},
   {7, 8, 9}
 };
-byte rowPins[ROWS] = {4, 3, 2}; //connect to the row pinouts of the buttons
-byte colPins[COLS] = {8, 7, 6}; //connect to the column pinouts of the buttons
+byte rowPins[ROWS] = {8, 7, 6}; //connect to the row pinouts of the buttons
+byte colPins[COLS] = {2, 3, 4}; //connect to the column pinouts of the buttons
 
 //initialize an instance of class NewKeypad
 Adafruit_Keypad customKeypad = Adafruit_Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
@@ -31,7 +31,7 @@ Adafruit_Keypad customKeypad = Adafruit_Keypad( makeKeymap(keys), rowPins, colPi
 void setup()
 {
   // initialize the pushbuttons pins as an inputs:
-  pinMode(StopButon, INPUT);
+  pinMode(StopButon, INPUT_PULLUP);
 
   //setup serial
   Serial.begin(115200); // start arduino serial
@@ -49,9 +49,11 @@ void setup()
 void loop()
 {
   customKeypad.tick(); // used to know when to compare values
+
+  //Check if we should stop playback
   StopButonState = digitalRead(StopButon);
-  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (StopButonState == HIGH) {
+  // check if the pushbutton is pressed. If it is, the buttonState is LOW:
+  if (StopButonState == LOW) {
     // stop playback:
     myMP3TheaterSoundboard.pause();
     Serial.println("DFPlayer paused by stop button");
@@ -59,8 +61,7 @@ void loop()
     // do nothing
   }
 
-
-
+  // check if matrix button is pressed.
   while (customKeypad.available()) {
     keypadEvent e = customKeypad.read();
     //Serial.print((char)e.bit.KEY);
@@ -72,12 +73,12 @@ void loop()
     else if (e.bit.EVENT == KEY_JUST_RELEASED) Serial.println(" released");
   }
 
+  // do we need delay?
   delay(10);
 
-  // read the value from the volume slider:
-  VolumeSlider = analogRead(VolumeSliderInputPin) / 34;
+  //set volume to curent slider position
+  VolumeSlider = analogRead(VolumeSliderInputPin) / 34;   // read the value from the volume slider:
   //  Serial.print("volumeSliser: ");
   //  Serial.println(VolumeSlider);
   myMP3TheaterSoundboard.volume(VolumeSlider);
-  //delay(300);
 }
