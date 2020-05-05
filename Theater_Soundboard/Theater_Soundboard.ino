@@ -34,8 +34,8 @@ void setup()
   pinMode(StopButon, INPUT_PULLUP);
 
   //setup serial
-  Serial.begin(115200); // start arduino serial
   mySoftwareSerial.begin(9600); // start softwere serial to send comands to DFPlayer mini mp3 modual
+  Serial.begin(115200); // start arduino serial
 
   myMP3TheaterSoundboard.begin(mySoftwareSerial); //link mp3 modual with serial conection
   customKeypad.begin(); // start our custom matrix of buttons
@@ -43,7 +43,7 @@ void setup()
   Serial.println("Setting volume to 5");
   myMP3TheaterSoundboard.volume(5);
   Serial.println("DFPlayer ready");
-  delay(300);
+  delay(100);
 }
 
 void loop()
@@ -68,12 +68,14 @@ void loop()
     Serial.print((int)e.bit.KEY);
     if (e.bit.EVENT == KEY_JUST_PRESSED) {
       Serial.println(" pressed");
-      myMP3TheaterSoundboard.play((int)e.bit.KEY);
+      myMP3TheaterSoundboard.playFromMP3Folder((int)e.bit.KEY);
+      Serial.print("DFPlayer playingTrack:");
+      Serial.print((int)e.bit.KEY);
     }
     else if (e.bit.EVENT == KEY_JUST_RELEASED) Serial.println(" released");
   }
 
-  // do we need delay?
+  // do we need delay? stops spamming volume update
   delay(10);
 
   //set volume to curent slider position
