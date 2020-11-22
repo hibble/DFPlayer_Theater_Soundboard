@@ -1,6 +1,23 @@
 #include <SoftwareSerial.h>
 #include <DFPlayerMini_Fast.h>
 #include <Adafruit_Keypad.h>
+#include <TaskScheduler.h>
+
+// task prototypes
+void MainLoop();
+void updateCounter();
+void updateDisplay();
+void debugDisplay();
+
+//timing for tasks
+const int mainLoopMillis = 10;
+const int updateVolumeMillis = 200;
+
+Scheduler runner;
+
+// change these repeat times to appropriate ones for real application
+Task t1(mainLoopMillis, TASK_FOREVER, &MainLoop);
+Task t2(updateVolumeMillis, TASK_FOREVER, &updateVolume);
 
 // softweere serial needed on arduino pro mini so usb serial is avaliable for diagnostic/development.
 SoftwareSerial mySoftwareSerial(11, 10); // RX, TX  note: add 1k resistor to both
@@ -40,14 +57,26 @@ void setup()
   myMP3TheaterSoundboard.begin(mySoftwareSerial); //link mp3 modual with serial conection
   customKeypad.begin(); // start our custom matrix of buttons
 
-  Serial.println("Setting volume to 5");
-  myMP3TheaterSoundboard.volume(5);
+  //setup periodic tasks
+  runner.init();
+  runner.addTask(t1);
+  runner.addTask(t2);
+  t1.enable();
+  t2.enable();
+
+  //output for debuging
+  Serial.println("Setting volume to 9");
+  myMP3TheaterSoundboard.volume(9);
   Serial.println("DFPlayer ready");
-  delay(100);
 }
 
 void loop()
 {
+  //run tasks
+  runner.execute();
+}
+
+void MainLoop() {
   customKeypad.tick(); // used to know when to compare values
 
   //Check if we should stop playback
@@ -66,21 +95,19 @@ void loop()
     keypadEvent e = customKeypad.read();
     //Serial.print((char)e.bit.KEY);
     Serial.print((int)e.bit.KEY);
+    Serial.println(" pressed");
     if (e.bit.EVENT == KEY_JUST_PRESSED) {
-      Serial.println(" pressed");
       myMP3TheaterSoundboard.playFromMP3Folder((int)e.bit.KEY);
-      Serial.print("DFPlayer playingTrack:");
-      Serial.print((int)e.bit.KEY);
+      Serial.println("DFPlayer playingTrack:");
+      Serial.println((int)e.bit.KEY);
     }
     else if (e.bit.EVENT == KEY_JUST_RELEASED) Serial.println(" released");
   }
-
-  // do we need delay? stops spamming volume update
-  delay(10);
-
+}
+void updateVolume() {
   //set volume to curent slider position
   VolumeSlider = analogRead(VolumeSliderInputPin) / 34;   // read the value from the volume slider:
-  //  Serial.print("volumeSliser: ");
-  //  Serial.println(VolumeSlider);
+  //Serial.print("volumeSliser: ");
+  //Serial.println(VolumeSlider);
   myMP3TheaterSoundboard.volume(VolumeSlider);
 }
